@@ -23,7 +23,7 @@ public class Player extends sunshine.queuerandom.QueuePlayer {
     private int num_tractors;
     private double time_budget;
     
-    final double HPARAM_TOLERANCE = 0.4D;
+    final double HPARAM_TOLERANCE = 0.3D;
     
     List<Point> bales, copy_bales;
     ArrayList<List<Point>> scan_zones;
@@ -171,7 +171,7 @@ public class Player extends sunshine.queuerandom.QueuePlayer {
             Collections.sort(initial,new Comparator <Point>() {
 
             public int compare(Point o1, Point o2) {
-            return Double.compare(Math.sqrt(Math.pow(o1.x,2)+ Math.pow(o1.y,2)),Math.sqrt(Math.pow(o2.x,2)+ Math.pow(o2.y,2)));
+            return Double.compare(o1.x/o1.y,o2.x/o2.y);
             }
             });
 
@@ -180,7 +180,8 @@ public class Player extends sunshine.queuerandom.QueuePlayer {
             equizones = new ArrayList<List<Point>>();
             int zone_count = (bales.size() % 11 == 0) ? bales.size()/11 : bales.size()/11 + 1;
 
-            int j=0;
+            int j=first;
+            boolean toggle = false;
             while( j<scan_zones.size())
                 {
                     ArrayList<Point> curr_cluster = new ArrayList<Point>();
@@ -205,7 +206,25 @@ public class Player extends sunshine.queuerandom.QueuePlayer {
 
                          scan_zones.set(j,curr_zone);
                          if(curr_zone.size() == 0)
+                          {
                             j++;
+                            if(j<scan_zones.size())
+                            {curr_zone = scan_zones.get(j);
+
+                            Collections.sort(curr_zone,new Comparator <Point>() {
+
+                                public int compare(Point o1, Point o2) {
+                            return Double.compare(o1.x/o1.y,o2.x/o2.y);
+                                }
+                                });
+                            }
+                            if(toggle && j<scan_zones.size())
+                                seed_cluster = curr_zone.get(curr_zone.size()-1);
+                            else if(j<scan_zones.size())
+                                seed_cluster = curr_zone.get(0);
+
+                            toggle = !toggle;
+                          }  
 
                     }
 
@@ -418,6 +437,8 @@ public ArrayList<Command> getMoreCommands(Tractor tractor)
         if(center == null){
 
           // Individually get furthest bale and LOAD
+          if(tractor.getAttachedTrailer()!=null)
+            toReturn.add(new Command(CommandType.DETATCH));
           Point bale_location = equizones.get(curr_idx).get(0);
           equizones.get(curr_idx).remove(0);
           if(equizones.get(curr_idx).size() == 0){
