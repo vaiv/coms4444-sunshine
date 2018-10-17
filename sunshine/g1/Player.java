@@ -23,7 +23,8 @@ public class Player extends sunshine.queuerandom.QueuePlayer {
     private int num_tractors;
     private double time_budget;
     
-    final double HPARAM_TOLERANCE = 0.3D;
+    final double HPARAM_TOLERANCE = 0.999999D;
+    final double HPARAM_BALE_TOLERANCE = 0.0D;
     
     List<Point> bales, copy_bales;
     ArrayList<List<Point>> scan_zones;
@@ -415,17 +416,14 @@ public class Player extends sunshine.queuerandom.QueuePlayer {
     
     private static Point travelToWithTolerance(Point p1, Point p2, double k) {
     	double d = distance(p1, p2);
-    	if (d < k)
+    	if (d <= k)
     		return p1;
+
     	return new Point(k / d * p1.x + (d - k) / d * p2.x,
     					 k / d * p1.y + (d - k) / d * p2.y);
     }
-    
-    private static Point travelToWithTolerance(Tractor tractor, Point p2, double k){
-    	return travelToWithTolerance(tractor.getLocation(), p2, k);
-    }
 
-    @Override
+	@Override
 	public ArrayList<Command> getMoreCommands(Tractor tractor){
         int idx = tractor.getId();
 
@@ -448,16 +446,16 @@ public class Player extends sunshine.queuerandom.QueuePlayer {
             curr_idx++;
           }
 
-          toReturn.add(Command.createMoveCommand(travelToWithTolerance(tractor, bale_location, HPARAM_TOLERANCE)));
+          //toReturn.add(Command.createMoveCommand(bale_location));
+          toReturn.add(Command.createMoveCommand(travelToWithTolerance(ORIGIN, bale_location, HPARAM_BALE_TOLERANCE)));
           toReturn.add(new Command(CommandType.LOAD));
 
           // Return to origin and UNLOAD
           Point adj_origin = ORIGIN;
-          /*double theta = Math.atan2(tractor.getLocation().y,tractor.getLocation().x);
+          double theta = Math.atan2(tractor.getLocation().y,tractor.getLocation().x);
           adj_origin.x= 0.9*Math.cos(theta);
           adj_origin.y= 0.9*Math.sin(theta);
-          toReturn.add(Command.createMoveCommand(adj_origin));*/
-          toReturn.add(Command.createMoveCommand(travelToWithTolerance(tractor, ORIGIN, HPARAM_TOLERANCE)));
+          toReturn.add(Command.createMoveCommand(adj_origin));
           toReturn.add(new Command(CommandType.UNLOAD));
 
         }
@@ -486,28 +484,28 @@ public class Player extends sunshine.queuerandom.QueuePlayer {
             balesRemain--;
 
             //toReturn.add(Command.createMoveCommand(next_bale));
-            toReturn.add(Command.createMoveCommand(travelToWithTolerance(tractor, next_bale, HPARAM_TOLERANCE)));
+            toReturn.add(Command.createMoveCommand(travelToWithTolerance(center, next_bale, HPARAM_BALE_TOLERANCE)));
             toReturn.add(new Command(CommandType.LOAD));
             //toReturn.add(Command.createMoveCommand(center));
-            toReturn.add(Command.createMoveCommand(travelToWithTolerance(tractor, center, HPARAM_TOLERANCE)));
+            toReturn.add(Command.createMoveCommand(travelToWithTolerance(next_bale, center, HPARAM_TOLERANCE)));
             toReturn.add(new Command(CommandType.STACK));
           }
           // Get last bale on forklift and attach
           Point next_bale = equizones.get(last_idx).get(0);
           equizones.get(last_idx).remove(0);
 
-          toReturn.add(Command.createMoveCommand(travelToWithTolerance(tractor, next_bale, HPARAM_TOLERANCE)));
+          //toReturn.add(Command.createMoveCommand(next_bale));
+          toReturn.add(Command.createMoveCommand(travelToWithTolerance(center, next_bale, HPARAM_BALE_TOLERANCE)));
           toReturn.add(new Command(CommandType.LOAD));
-          toReturn.add(Command.createMoveCommand(travelToWithTolerance(tractor, center, HPARAM_TOLERANCE)));
+          toReturn.add(Command.createMoveCommand(travelToWithTolerance(next_bale, center, HPARAM_TOLERANCE)));
           toReturn.add(new Command(CommandType.ATTACH));
 
           // Go back to origin, UNLOAD forklift and detatch
-          /*Point adj_origin = ORIGIN;
+          Point adj_origin = ORIGIN;
           double theta = Math.atan2(tractor.getLocation().y,tractor.getLocation().x);
           adj_origin.x= 0.9*Math.cos(theta);
           adj_origin.y= 0.9*Math.sin(theta);
-          toReturn.add(Command.createMoveCommand(adj_origin));*/
-          toReturn.add(Command.createMoveCommand(travelToWithTolerance(tractor, ORIGIN, HPARAM_TOLERANCE)));
+          toReturn.add(Command.createMoveCommand(adj_origin));
           toReturn.add(new Command(CommandType.UNLOAD));
           toReturn.add(new Command(CommandType.DETATCH));
 
