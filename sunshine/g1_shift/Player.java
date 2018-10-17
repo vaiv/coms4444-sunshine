@@ -1,4 +1,4 @@
-package sunshine.g1;
+package sunshine.g1_shift;
 
 import java.util.List;
 import java.util.Collections;
@@ -23,7 +23,7 @@ public class Player extends sunshine.queuerandom.QueuePlayer {
     private int num_tractors;
     private double time_budget;
     
-    final double HPARAM_TOLERANCE = 0.3D;
+    final double HPARAM_TOLERANCE = 0.95D;
     
     List<Point> bales, copy_bales;
     ArrayList<List<Point>> scan_zones;
@@ -445,7 +445,8 @@ public ArrayList<Command> getMoreCommands(Tractor tractor)
             curr_idx++;
           }
 
-          toReturn.add(Command.createMoveCommand(travelToWithTolerance(ORIGIN, bale_location, HPARAM_TOLERANCE)));
+          toReturn.add(Command.createMoveCommand(bale_location));
+          //toReturn.add(Command.createMoveCommand(travelToWithTolerance(ORIGIN, bale_location, HPARAM_TOLERANCE)));
           toReturn.add(new Command(CommandType.LOAD));
 
           // Return to origin and UNLOAD
@@ -481,8 +482,8 @@ public ArrayList<Command> getMoreCommands(Tractor tractor)
             equizones.get(last_idx).remove(0);
             balesRemain--;
 
-            //toReturn.add(Command.createMoveCommand(next_bale));
-            toReturn.add(Command.createMoveCommand(travelToWithTolerance(center, next_bale, HPARAM_TOLERANCE)));
+            toReturn.add(Command.createMoveCommand(next_bale));
+            //toReturn.add(Command.createMoveCommand(travelToWithTolerance(center, next_bale, HPARAM_TOLERANCE)));
             toReturn.add(new Command(CommandType.LOAD));
             //toReturn.add(Command.createMoveCommand(center));
             toReturn.add(Command.createMoveCommand(travelToWithTolerance(next_bale, center, HPARAM_TOLERANCE)));
@@ -492,7 +493,8 @@ public ArrayList<Command> getMoreCommands(Tractor tractor)
           Point next_bale = equizones.get(last_idx).get(0);
           equizones.get(last_idx).remove(0);
 
-          toReturn.add(Command.createMoveCommand(travelToWithTolerance(center, next_bale, HPARAM_TOLERANCE)));
+          toReturn.add(Command.createMoveCommand(next_bale));
+          //toReturn.add(Command.createMoveCommand(travelToWithTolerance(center, next_bale, HPARAM_TOLERANCE)));
           toReturn.add(new Command(CommandType.LOAD));
           toReturn.add(Command.createMoveCommand(travelToWithTolerance(next_bale, center, HPARAM_TOLERANCE)));
           toReturn.add(new Command(CommandType.ATTACH));
